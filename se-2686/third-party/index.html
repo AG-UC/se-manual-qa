@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SE-2686 — THIRD_PARTY test page</title>
+
+  <!--
+    Fires a GA-protocol /g/collect request to a Google-owned host PRIOR to
+    consent (no banner / no gate at all). DEA's GoogleAnalyticsRequestInterceptor
+    matches this against the third-party pattern:
+        https?://[^/]*google-analytics.com/g/collect?v=
+
+    The URL is synthetic — the actual response doesn't matter, Playwright's
+    `page.Request` event captures the URL at initiation.
+
+    Expected DEA classification: tagDeliveryMethod = THIRD_PARTY
+  -->
+
+  <script>
+    // Fire the GA collect request immediately on page load, before anything else.
+    // Use Image() (which always issues a GET regardless of CORS/response) for
+    // maximum reliability across browsers + Playwright contexts.
+    (function() {
+      const img = new Image();
+      img.src = 'https://www.google-analytics.com/g/collect?v=2&tid=G-TEST3RDPRTY&cid=' + Date.now() + '&en=page_view';
+    })();
+  </script>
+</head>
+<body style="font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem;">
+  <h1>SE-2686 — THIRD_PARTY</h1>
+  <p>This page fires a request to <code>https://www.google-analytics.com/g/collect?v=2&amp;...</code> on load. DEA should classify <code>tagDeliveryMethod = THIRD_PARTY</code>.</p>
+  <p>No CMP. No consent banner. The whole point is that the tracker fires <strong>prior to any consent action</strong>.</p>
+</body>
+</html>

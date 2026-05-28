@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SE-2686 — GTG test page</title>
+
+  <!--
+    Fires a GA-protocol /g/collect request to the evaluated origin itself —
+    simulating Google Tag Gateway (first-party delivery). When DEA evaluates
+    ag-uc.github.io/se-manual-qa/se-2686/gtg/, AddGtgPattern() dynamically
+    registers:
+        https?://ag-uc.github.io/g/collect?v=
+        https?://www.ag-uc.github.io/g/collect?v=
+
+    Path /g/collect doesn't exist on GitHub Pages — the request returns 404.
+    Playwright still captures the URL on initiation.
+
+    Expected DEA classification: tagDeliveryMethod = GTG
+  -->
+
+  <script>
+    (function() {
+      // Use absolute URL with the evaluated host so the match is unambiguous;
+      // also avoids any GH-Pages path-rewriting surprises.
+      const img = new Image();
+      img.src = 'https://ag-uc.github.io/g/collect?v=2&tid=G-TESTGTG&cid=' + Date.now() + '&en=page_view';
+    })();
+  </script>
+</head>
+<body style="font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem;">
+  <h1>SE-2686 — GTG</h1>
+  <p>This page fires a request to <code>https://ag-uc.github.io/g/collect?v=2&amp;...</code> on load — same origin as the evaluated host. DEA should classify <code>tagDeliveryMethod = GTG</code>.</p>
+  <p>The path 404s on GitHub Pages — fine. The interceptor captures the URL at request-initiation time.</p>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SE-2686 — Precedence test page (GTG &gt; SST &gt; THIRD_PARTY)</title>
+
+  <!--
+    Fires GTG, SST, AND third-party requests on page load. The current
+    implementation captures the FIRST observed matching request — so this
+    page is sequenced to fire GTG first to verify the documented precedence
+    contract (GTG > SST > THIRD_PARTY) holds in the happy path.
+
+    Honest caveat: the interceptor is "first-arrival-wins", not
+    "highest-precedence-wins". On this page, browsers tend to dispatch DOM
+    Image requests in source order, but that is not a guarantee. If this
+    page intermittently classifies as SST or THIRD_PARTY, the precedence
+    contract is implemented as ordering-by-document rather than
+    ordering-by-pattern — that finding belongs back on SE-2686 as a follow-up,
+    not a smoke-test failure.
+
+    Expected (happy-path) DEA classification: tagDeliveryMethod = GTG
+  -->
+
+  <script>
+    (function() {
+      // Source order = dispatch order in practice. Fire GTG first.
+      new Image().src = 'https://ag-uc.github.io/g/collect?v=2&tid=G-PREC-GTG&cid=' + Date.now() + '&en=page_view';
+      new Image().src = 'https://sst.ag-uc.github.io/g/collect?v=2&tid=G-PREC-SST&cid=' + Date.now() + '&en=page_view';
+      new Image().src = 'https://www.google-analytics.com/g/collect?v=2&tid=G-PREC-3RD&cid=' + Date.now() + '&en=page_view';
+    })();
+  </script>
+</head>
+<body style="font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem;">
+  <h1>SE-2686 — Precedence</h1>
+  <p>This page fires all three request types — GTG, SST, THIRD_PARTY — with GTG dispatched first.</p>
+  <p>Expected: DEA classifies as <code>GTG</code> (highest precedence). If it lands as SST or THIRD_PARTY, the implementation is order-of-arrival rather than rank-by-pattern — note this as a follow-up on SE-2686.</p>
+</body>
+</html>
