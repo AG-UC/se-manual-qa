@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>se-manual-qa — SE ticket smoke targets</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #222; }
+    code { background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 3px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+    th { background: #f6f6f6; }
+  </style>
+</head>
+<body>
+  <h1>se-manual-qa</h1>
+  <p>
+    Manual-QA test targets for <strong>Sourcing &amp; Enrichment (SE)</strong> tickets. One
+    subdirectory per ticket. Pages are served by GitHub Pages so any UC scanner /
+    scan-adapter / CMP under test can crawl them by URL.
+  </p>
+
+  <h2>Targets</h2>
+  <table>
+    <thead>
+      <tr><th>Ticket</th><th>Path</th><th>Bug class</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="https://usercentrics.atlassian.net/browse/SE-3091">SE-3091</a></td>
+        <td><a href="se-3091/">se-3091/</a></td>
+        <td><code>scan-adapter</code> cookie-purpose cache-aliasing (Cookiebot pipeline). Loads YouTube; assert <code>YSC.CookiePurposes</code> is non-empty after dev scan + post-processing.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Sibling repo</h2>
+  <p>
+    Long-lived regression targets for the V3+ Scanner suite live in a different repo:
+    <a href="https://github.com/AG-UC/se-scan-dev.github.io">AG-UC/se-scan-dev.github.io</a>
+    (consumed by <a href="https://bitbucket.org/usercentricscode/scan-e2e-tests">scan-e2e-tests</a>).
+  </p>
+</body>
+</html>

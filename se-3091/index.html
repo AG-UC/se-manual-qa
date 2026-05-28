@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SE-3091 — scan-adapter cookie-purpose cache-aliasing smoke</title>
+
+  <!--
+    Smoke target for the SE-3091 / CTS-4295 cache-aliasing fix in scan-adapter
+    (Cookiebot pipeline). Loads YouTube — which sets the YSC cookie — because
+    YSC has CookiePurposes in BOTH the dev and prod Cookiebot DBs per Michel
+    Gammelgaard. Other popular cross-domain providers (Google Analytics,
+    Facebook Pixel, …) are intentionally NOT included: their dev-DB purposes
+    are incomplete, which would muddy the smoke signal.
+
+    NO UC banner / no UC SDK. Cookiebot customers ship their own CMP via
+    Cookiebot's CDN; nothing on the page itself injects a CMP. This page is
+    meant to be configured as the start URL of a Cookiebot DEV test customer
+    (CBID provided by Michel) and scanned through the
+    cookiebot-scan-scheduler → scan-tracker → scan-callback-handler →
+    scan-adapter pipeline.
+
+    Page source: https://github.com/AG-UC/se-manual-qa
+    Runbook:     ./README.md in this directory
+  -->
+
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #222; }
+    code { background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.95em; }
+    .smoke-target { background: #fff8d6; border-left: 4px solid #b58900; padding: 0.75rem 1rem; margin: 1rem 0; }
+    h2 { margin-top: 1.6rem; }
+  </style>
+</head>
+
+<body>
+  <h1>SE-3091 — Cookiebot YSC smoke</h1>
+
+  <p>
+    Static test page for the <strong>scan-adapter</strong> cookie-purpose
+    cache-aliasing fix (Jira: <a href="https://usercentrics.atlassian.net/browse/SE-3091">SE-3091</a> /
+    <code>CTS-4295</code>). Loads YouTube so the Cookiebot scanner observes
+    <code>YSC</code> (and <code>VISITOR_INFO1_LIVE</code>) being set; the
+    post-scan cookie declaration should list these cookies with a non-empty
+    <code>CookiePurposes</code> field in English.
+  </p>
+
+  <div class="smoke-target">
+    <strong>Smoke target:</strong> after a Cookiebot scan of this page, the
+    cookie declaration for the test CBID must list <code>YSC</code> with a
+    non-empty purpose string (e.g. <em>"Registers a unique ID to keep
+    statistics of what videos from YouTube the user has seen."</em>). Pre-fix:
+    purpose may be empty when the <code>YSC</code> cache key was last written
+    by another tracker. Post-fix: the immutable record contract guarantees
+    the purpose survives.
+  </div>
+
+  <h2>What's on this page</h2>
+
+  <p>One embedded YouTube player. YouTube drops <code>YSC</code> (session-id,
+    statistics category) and <code>VISITOR_INFO1_LIVE</code> on play / load;
+    the Cookiebot scanner observes both as <code>DocumentCookie</code> entries,
+    which is enough to exercise the same-scan / same-cache-key path the fix
+    repairs.</p>
+
+  <iframe src="https://www.youtube.com/embed/DWcJFNfaw9c"
+          width="426" height="240" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+
+  <h2>Out-of-scope on this page</h2>
+
+  <ul>
+    <li><strong>No UC CMP.</strong> Cookiebot customers inject their own banner from
+      the Cookiebot CDN once a CBID is bound to this URL.</li>
+    <li><strong>No GA / GTM / Meta / LinkedIn / HubSpot / DoubleClick.</strong> Their
+      dev-DB purposes are incomplete; including them would muddy the smoke signal.
+      For a broader translation matrix verification, do that as a production retest
+      after redeploy + rescan.</li>
+    <li><strong>No anchor links to sibling QA pages.</strong> Self-contained — sibling
+      links cause the scanner to crawl outward and contaminate signals.</li>
+  </ul>
+
+  <p style="font-size: 0.9em; color: #555;">
+    Source: <code>github.com/AG-UC/se-manual-qa</code> ·
+    Runbook: <code>se-3091/README.md</code>.
+  </p>
+</body>
+</html>
