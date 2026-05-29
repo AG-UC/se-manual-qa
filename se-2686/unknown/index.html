@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SE-2686 — UNKNOWN test page</title>
+
+  <!--
+    Page fires NO matching /g/collect request — neither third-party
+    (google-analytics.com), SST (sst.<host>), nor GTG (<host>/g/collect).
+    Used to verify the scan-result-api passes the UNKNOWN enum value through
+    without dropping or transforming it (SE-3206 explicitly includes UNKNOWN
+    in scope; SE-3202 explicitly excluded it).
+
+    Plain HTML only — no scripts, no analytics, no embeds.
+
+    Expected scan-result-api / DEA conclusion: tagDeliveryMethod = UNKNOWN
+  -->
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    code { background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>SE-2686 — UNKNOWN</h1>
+  <p>This page fires no GA-protocol <code>/g/collect</code> request at all. DEA should observe nothing, scan-result-api should expose <code>tagDeliveryMethod = UNKNOWN</code>.</p>
+  <p>Used by SE-3206 (scan-result-api passthrough) to verify the <code>UNKNOWN</code> enum value reaches the API response.</p>
+</body>
+</html>
