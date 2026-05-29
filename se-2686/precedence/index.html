@@ -22,6 +22,11 @@
   -->
 
   <script>
+    // See third-party/ for rationale. Sets window.google_tag_data so DEA
+    // marks GcmDetected=true and scan-result-api maps the new fields
+    // through instead of short-circuiting into NotImplemented.
+    window.google_tag_data = window.google_tag_data || {};
+
     (function() {
       // Source order = dispatch order in practice. Fire GTG first.
       new Image().src = 'https://ag-uc.github.io/g/collect?v=2&tid=G-PREC-GTG&cid=' + Date.now() + '&en=page_view';

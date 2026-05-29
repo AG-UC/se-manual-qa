@@ -19,6 +19,16 @@
     body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
     code { background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 3px; }
   </style>
+  <script>
+    // Mark the page as Google-Consent-Mode-implementing for DEA (so it does
+    // NOT report GcmDetected=false, which would make scan-result-api short-
+    // circuit into NotImplemented and drop all the new fields including
+    // the tagDeliveryMethod=UNKNOWN we want to verify on this page).
+    // DEA's HasGoogleTagData is literally `window.google_tag_data ? true : false`.
+    // We intentionally fire NO /g/collect request — DEA observes no GA
+    // delivery method → tagDeliveryMethod = UNKNOWN.
+    window.google_tag_data = window.google_tag_data || {};
+  </script>
 </head>
 <body>
   <h1>SE-2686 — UNKNOWN</h1>

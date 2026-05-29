@@ -17,6 +17,14 @@
   -->
 
   <script>
+    // Mark the page as Google-Consent-Mode-implementing for DEA, so
+    // scan-result-api does NOT short-circuit into NotImplemented. DEA's
+    // detection is literally `window.google_tag_data ? true : false`
+    // (see HasGoogleTagData in domain-evaluation/PageExtensions.cs).
+    // We set this BEFORE firing the synthetic /g/collect request so the
+    // GCM-detected flag holds by the time DEA inspects.
+    window.google_tag_data = window.google_tag_data || {};
+
     // Fire the GA collect request immediately on page load, before anything else.
     // Use Image() (which always issues a GET regardless of CORS/response) for
     // maximum reliability across browsers + Playwright contexts.

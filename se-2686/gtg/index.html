@@ -19,6 +19,12 @@
   -->
 
   <script>
+    // See third-party/ for rationale. window.google_tag_data is what DEA's
+    // HasGoogleTagData check (PageExtensions.cs) tests for to set
+    // GcmDetected=true, which in turn keeps scan-result-api from
+    // short-circuiting into NotImplemented and dropping the new fields.
+    window.google_tag_data = window.google_tag_data || {};
+
     (function() {
       // Use absolute URL with the evaluated host so the match is unambiguous;
       // also avoids any GH-Pages path-rewriting surprises.

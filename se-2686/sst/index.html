@@ -19,6 +19,12 @@
   -->
 
   <script>
+    // See third-party/ for rationale. window.google_tag_data is what DEA's
+    // HasGoogleTagData check (PageExtensions.cs) tests for to set
+    // GcmDetected=true, which in turn keeps scan-result-api from
+    // short-circuiting into NotImplemented and dropping the new fields.
+    window.google_tag_data = window.google_tag_data || {};
+
     (function() {
       const img = new Image();
       img.src = 'https://sst.ag-uc.github.io/g/collect?v=2&tid=G-TESTSST&cid=' + Date.now() + '&en=page_view';
