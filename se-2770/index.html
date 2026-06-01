@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SE-2770 — httpRequestInjections smoke</title>
+
+  <!--
+    Smoke target for the SE-2770 / SE-1840 epic "httpRequestInjections":
+      - scan-configuration-api PR #125 stores `httpRequestInjections`
+        on `domain_scan_configuration` and exposes it through the
+        scan-planner read endpoints.
+      - scan-planner PR #195 reads it and forwards it to scan-api's
+        POST /Scan body as `pageScan.httpRequestInjections`.
+
+    When scan-planner triggers a One CMP / UC CMP scan against this URL
+    with httpRequestInjections configured, the scan-tracker (Playwright)
+    should append the configured queryParameters to every navigation
+    request (scope=2) or just the first page (scope=1). The scan result
+    JSON records each scanned URL — those URLs are the end-of-chain
+    proof that the injections survived all the way through.
+
+    Page source: https://github.com/AG-UC/se-manual-qa
+    Runbook:     ./README.md in this directory
+  -->
+
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #222; }
+    code { background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.95em; }
+    pre { background: #f6f6f6; padding: 0.6rem; border-radius: 4px; overflow-x: auto; }
+    .smoke-target { background: #fff8d6; border-left: 4px solid #b58900; padding: 0.75rem 1rem; margin: 1rem 0; }
+    .reflect { background: #eef6ff; border-left: 4px solid #2c70b8; padding: 0.75rem 1rem; margin: 1rem 0; }
+    h2 { margin-top: 1.6rem; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 0.4rem 0.6rem; text-align: left; }
+    th { background: #f6f6f6; }
+  </style>
+</head>
+<body>
+  <h1>SE-2770 — httpRequestInjections smoke</h1>
+
+  <p>
+    Static target for the
+    <a href="https://usercentrics.atlassian.net/browse/SE-2770">SE-2770</a>
+    plumbing across <code>scan-configuration-api</code> and
+    <code>scan-planner</code>. The page itself does nothing —
+    the test is whether the scanner navigates here with the
+    configured <code>queryParameters</code> appended to the URL.
+  </p>
+
+  <div class="smoke-target">
+    <strong>Smoke target:</strong> after a One CMP scan of this URL with
+    <code>httpRequestInjections.queryParameters = { qa_test: "&lt;val&gt;", utm_source: "scan" }</code>
+    and <code>scope: 2</code>, the scan result JSON must record at least one
+    scanned URL on this origin that carries those query parameters.
+  </div>
+
+  <h2>Reflected query parameters (this load)</h2>
+  <p>
+    The block below is filled in client-side from
+    <code>location.search</code>. When you open this page directly with
+    a query string (e.g.
+    <code>?qa_test=manual&amp;utm_source=scan</code>) it should echo
+    them. The scanner's recorded navigation URL is the authoritative
+    signal — this echo is just a human sanity check.
+  </p>
+
+  <div class="reflect">
+    <strong>Raw <code>location.search</code>:</strong>
+    <pre id="raw">(empty)</pre>
+    <strong>Parsed parameters:</strong>
+    <pre id="parsed">(none)</pre>
+  </div>
+
+  <h2>How verification works</h2>
+  <ol>
+    <li>Configure a domain on a scan-configuration with
+      <code>httpRequestInjections</code> pointing at this URL.</li>
+    <li>Trigger <code>POST /scheduling/scan-now</code> on
+      <code>scan-planner</code>.</li>
+    <li>Wait for the scan to reach <code>Done</code> on scan-api.</li>
+    <li>Fetch the scan result JSON via
+      <code>GET /Scan/{scanId}/result</code> → follow the
+      <code>url</code> link, look at <code>pageScans[*].url</code> (or
+      whichever field the schema version exposes). Each visited URL
+      should contain the configured query parameters.</li>
+  </ol>
+
+  <h2>Expected outcomes</h2>
+  <table>
+    <thead>
+      <tr><th>Scope</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>1</code> — FirstPage</td>
+        <td>Only the start-URL navigation carries the params.</td>
+      </tr>
+      <tr>
+        <td><code>2</code> — AllPages</td>
+        <td>Every page navigation during the scan carries the params (sub-resources / asset requests are out of scope of this signal).</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    (function () {
+      var raw = location.search || '';
+      document.getElementById('raw').textContent = raw || '(empty)';
+      if (!raw) return;
+      try {
+        var params = new URLSearchParams(raw);
+        var lines = [];
+        params.forEach(function (v, k) { lines.push(k + ' = ' + v); });
+        document.getElementById('parsed').textContent = lines.join('\n') || '(none)';
+      } catch (e) {
+        document.getElementById('parsed').textContent = 'parse error: ' + e.message;
+      }
+    })();
+  </script>
+</body>
+</html>
