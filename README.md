@@ -34,3 +34,4 @@ links can cause the scanner to crawl outward and contaminate the signal).
 | [SE-3091](https://usercentrics.atlassian.net/browse/SE-3091) | [`se-3091/`](./se-3091/) | `scan-adapter` cookie-purpose cache-aliasing | Smoke ready |
 | [SE-2686](https://usercentrics.atlassian.net/browse/SE-2686) / [SE-3202](https://usercentrics.atlassian.net/browse/SE-3202) | [`se-2686/`](./se-2686/) | DEA tag-delivery-method classification (GTG / SST / THIRD_PARTY) | Smoke ready — 4 sub-targets + runbook |
 | [SE-2770](https://usercentrics.atlassian.net/browse/SE-2770) | [`se-2770/`](./se-2770/) | `scan-configuration-api` + `scan-planner` `httpRequestInjections` plumbing (One CMP) | Smoke ready |
+| [SE-3248](https://usercentrics.atlassian.net/browse/SE-3248) | [`se-3248/`](./se-3248/) | DEA `ExternalReference → OrderId` collision across `ConsentModeCheck` / `CbConfigurationCheck` (NRE in CB Admin) | Smoke ready |

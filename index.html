@@ -41,6 +41,11 @@
         <td><a href="se-2770/">se-2770/</a></td>
         <td><code>scan-configuration-api</code> + <code>scan-planner</code> <code>httpRequestInjections</code> plumbing. Page reflects <code>location.search</code> so an injected query parameter is visible in the recorded scan URL. Runbook in <code>se-2770/README.md</code>.</td>
       </tr>
+      <tr>
+        <td><a href="https://usercentrics.atlassian.net/browse/SE-3248">SE-3248</a></td>
+        <td><a href="se-3248/">se-3248/</a></td>
+        <td>DEA <code>ExternalReference</code> collision across <code>ConsentModeCheck</code> / <code>CbConfigurationCheck</code>. Caused the deceptive <code>Completed</code>/<code>result=null</code>/<code>error=null</code> payload → <code>NullReferenceException</code> in CB Admin. Page is a trivial static target; the test exercises DEA's association layer via two POSTs + four GETs. Runbook in <code>se-3248/README.md</code>.</td>
+      </tr>
     </tbody>
   </table>
 

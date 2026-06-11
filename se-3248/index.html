@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SE-3248 — DEA multi-method ExternalReference smoke target</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  body { font: 14px/1.5 system-ui, sans-serif; max-width: 640px; margin: 2em auto; padding: 0 1em; color: #222; }
+  code { background: #f4f4f4; padding: 0 4px; border-radius: 3px; }
+  a { color: #06c; }
+</style>
+</head>
+<body>
+<h1>SE-3248 — DEA multi-method ExternalReference</h1>
+<p>
+  This page is the scan target for the
+  <a href="https://usercentrics.atlassian.net/browse/SE-3248">SE-3248</a> smoke recipe.
+  Its only job is to be a stable, fast URL that DEA's <code>ConsentModeCheck</code> and
+  <code>CbConfigurationCheck</code> endpoints can finish quickly so the test exercises
+  the <em>association layer</em>, not the page itself.
+</p>
+<p>
+  Recipe: see <a href="./README.md">README.md</a> in this directory.
+</p>
+<p>
+  Fix under test: <code>domain-evaluation</code>
+  <a href="https://bitbucket.org/usercentricscode/domain-evaluation/pull-requests/76">PR #76</a>
+  (commit <code>dee93c0</code>).
+</p>
+</body>
+</html>
