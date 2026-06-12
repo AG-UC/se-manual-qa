@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SE-2256 — scan-adapter DomainOrig GTM-exclusion smoke</title>
+
+  <!--
+    Smoke target for the SE-2256 / CTS-4017 fix in scan-adapter
+    (PR #23427 — "exclude tag manager hosts from DomainOrig resolution").
+
+    Bug: when a third-party tracker is loaded by GTM, scan-adapter's
+    DomainOrigResolver was using the GTM host (www.googletagmanager.com)
+    as the cookie's DomainOrig. Result in the Cookie Declaration: trackers
+    from TikTok / Meta / Microsoft showed up grouped under "Google".
+
+    Fix: scan-adapter now keeps a static InitiatorExclusionHosts set
+    containing www.googletagmanager.com (+ non-www variant via WwwFlip).
+    When the recorded tracker Initiator host matches, DomainOrigResolver
+    returns IDomainOrigResult.Ignore() and the resolver falls back to
+    tracker.ProviderDomain.
+
+    This page loads gtag.js from googletagmanager.com so the Cookiebot
+    scanner records cookies whose Initiator host is googletagmanager.com.
+    The page intentionally relies on real GTM/GA activity (rather than a
+    purpose-built TikTok pixel) because: (a) Google's gtag.js endpoint is
+    publicly addressable without a custom container, and (b) the fix is
+    purely a host-string match — any cookie whose recorded Initiator host
+    is www.googletagmanager.com exercises the same branch.
+
+    The canonical real-world reproducer remains vaccindirekt.se — see
+    ./README.md for the prod-rescan workflow.
+
+    NO UC banner / no UC SDK. Configure this page as the start URL of a
+    Cookiebot DEV test customer; the CB CDN-served declaration is the
+    surface under inspection.
+
+    Page source: https://github.com/AG-UC/se-manual-qa
+    Runbook:     ./README.md in this directory
+  -->
+
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #222; }
+    code { background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.95em; }
+    .smoke-target { background: #fff8d6; border-left: 4px solid #b58900; padding: 0.75rem 1rem; margin: 1rem 0; }
+    h2 { margin-top: 1.6rem; }
+  </style>
+
+  <!--
+    Real GTM gtag.js endpoint. G-DEMO12345 is a placeholder id; the script
+    still loads, registers _ga / _gid cookies, and the scanner records
+    Initiator = https://www.googletagmanager.com/gtag/js?id=G-DEMO12345
+    for those cookie observations. That is enough to hit the new
+    InitiatorExclusionHosts branch.
+  -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DEMO12345"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-DEMO12345');
+  </script>
+</head>
+
+<body>
+  <h1>SE-2256 — scan-adapter DomainOrig GTM-exclusion smoke</h1>
+
+  <p>
+    Static test page for the <strong>scan-adapter</strong>
+    <code>DomainOrigResolver</code> fix
+    (Jira: <a href="https://usercentrics.atlassian.net/browse/SE-2256">SE-2256</a> /
+    <code>CTS-4017</code>; scan-adapter
+    <a href="https://dev.azure.com/cybot/Scanner%20Services/_git/scan-adapter/pullrequest/23427">PR #23427</a>).
+  </p>
+
+  <p>
+    Loads Google's <code>gtag.js</code> from
+    <code>www.googletagmanager.com</code> so the Cookiebot scanner records
+    cookies whose <code>Initiator</code> host is exactly the host the fix
+    now excludes. After the fix, the resolver should fall back to
+    <code>tracker.ProviderDomain</code> instead of attributing those
+    cookies to <code>www.googletagmanager.com</code>.
+  </p>
+
+  <div class="smoke-target">
+    <strong>Smoke target:</strong> after a Cookiebot dev scan of this page,
+    no cookie in the resulting declaration should be attributed to
+    <code>www.googletagmanager.com</code> as its provider. Cookies set by
+    gtag.js should show their real third-party provider domain (or the
+    first-party domain when applicable) — never the GTM host itself.
+  </div>
+
+  <h2>What's on this page</h2>
+
+  <p>
+    Just the gtag.js loader and a minimal <code>dataLayer</code>/<code>gtag()</code>
+    bootstrap. <code>G-DEMO12345</code> is a placeholder measurement id —
+    the loader still fetches the bundle and runs the standard GA cookie
+    initialisation (<code>_ga</code>, <code>_gid</code>, etc.). The
+    scanner records the <code>Initiator</code> URL on each cookie set,
+    which is what <code>DomainOrigResolver</code> matches against.
+  </p>
+
+  <h2>Out-of-scope on this page</h2>
+
+  <ul>
+    <li><strong>No TikTok pixel / Meta pixel / Bing UET.</strong> Those are
+      the user-facing symptoms in the SE-2256 ticket. Reproducing them
+      synthetically requires a real GTM container that fires those tags;
+      the canonical reproducer for that flavour of the bug is the
+      production scan of <code>vaccindirekt.se</code> (see README).</li>
+    <li><strong>No UC CMP.</strong> Cookiebot customers inject their own banner
+      from the Cookiebot CDN once a CBID is bound to this URL.</li>
+    <li><strong>No anchor links to sibling QA pages.</strong> Self-contained.</li>
+  </ul>
+
+  <p style="font-size: 0.9em; color: #555;">
+    Source: <code>github.com/AG-UC/se-manual-qa</code> ·
+    Runbook: <code>se-2256/README.md</code>.
+  </p>
+</body>
+</html>
