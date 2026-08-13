@@ -78,6 +78,22 @@ curl -sS -X POST http://localhost:5051/track -H "Content-Type: application/json"
    (on `main` it hangs — only test this on the PR branch, and kill the request after ~60s
    if you test the baseline).
 
+## Real sites for the spread check (suggested, verified 2026-08-13)
+
+AccessiBe / Cookiebot presence checked by fetching each page and grepping for
+`acsbapp.com` / `consent.cookiebot.com`.
+
+| Category | Sites | Expected |
+| --- | --- | --- |
+| A. Known-broken AccessiBe (CTS-4680) | henryusa.com, caesarstone.co.uk, vibrantz.com (also a Cookiebot CMP customer), magnetforensics.com (episode sometimes short-lived — zero warnings possible) | Completes with `timed out` warnings + real partial data |
+| B. AccessiBe present, page healthy | accessibe.com (runs its own widget); more via BuiltWith/PublicWWW search for `acsbapp.com` | Zero warnings on most runs |
+| C. Known Cookiebot customers | vaccindirekt.se (CB domain `1717503`, 39 cookies/trackers in the SE-3332 QA pass to compare against), vibrantz.com | Zero `timed out` warnings, counts comparable to earlier scans |
+| D. Heavy/slow but healthy (false-positive stress) | bbc.com, cnn.com, nytimes.com, spiegel.de, bild.de, amazon.de, booking.com, aliexpress.com | Zero `timed out` warnings, plausible link/cookie counts |
+| E. Fast baselines (already run) | wikipedia.org, usercentrics.com, cookiebot.com | Zero guard warnings |
+
+Suggested order: D → C → A/B. Any unexpected warning/hang on a healthy site: diagnose with
+the `hang-diagnose` skill (scan-dev-ai) before concluding.
+
 ## Executed results — 2026-08-13, PR `0fd9fb3` vs `main` `f363a90` (local, same machine)
 
 | Target | `main` (baseline) | PR branch | Verdict |
