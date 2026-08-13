@@ -70,9 +70,10 @@
     }, 1500);
 
     // A late cookie, written while the page is still being scanned — must also be captured.
+    // 2s: comfortably inside the scan's page-recording window (observed ~4s on this page).
     setTimeout(() => {
       document.cookie = "se3689_slow_late=1; path=/; max-age=3600";
-    }, 4000);
+    }, 2000);
   </script>
 </body>
 </html>

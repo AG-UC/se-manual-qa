@@ -28,7 +28,7 @@ regression.
 | Target | URL | Simulates | Expected result |
 | --- | --- | --- | --- |
 | `blocked/` | <https://ag-uc.github.io/se-manual-qa/se-3689/blocked/> | The AccessiBe bug: main thread pinned for 90s (override: `?blockMs=7000`) | Scan **completes** (≈30s, not 10min), `warnings[]` lists timeouts, the cookie + storage item set *before* the pin are still in the result |
-| `slow-healthy/` | <https://ag-uc.github.io/se-manual-qa/se-3689/slow-healthy/> | A heavy-but-working site: ~65% CPU for 12s, iframe churn, GTM tag, late cookie | **Zero** timeout warnings; all **30 links**, all **4 cookies** (`se3689_slow_c1..c3` + `se3689_slow_late`), storage items present |
+| `slow-healthy/` | <https://ag-uc.github.io/se-manual-qa/se-3689/slow-healthy/> | A heavy-but-working site: ~65% CPU for 12s, iframe churn, GTM tag, late cookie | **Zero** timeout warnings; all **30 links**, all **4 cookies** (`se3689_slow_c1..c3` + `se3689_slow_late`, written 2s in), storage items present |
 | `healthy/` | <https://ag-uc.github.io/se-manual-qa/se-3689/healthy/> | A plain fast site | Fast scan, zero warnings, 10 links, 2 cookies, 1 storage item |
 
 ## How to run (local scan-tracker, no cluster needed)
