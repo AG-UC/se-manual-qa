@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SE-3689 — scan-tracker CDP-hang timeout guards</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #222; }
+    code { background: #f0f0f0; padding: 0.1rem 0.3rem; border-radius: 3px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+    th { background: #f6f6f6; }
+  </style>
+</head>
+<body>
+  <h1>SE-3689 — scan-tracker CDP-hang timeout guards (PR #120)</h1>
+  <p>
+    QA targets for the fix that stops the scanner hanging forever on pages whose main thread
+    is pinned by a broken third-party script (AccessiBe). Runbook in
+    <a href="https://github.com/AG-UC/se-manual-qa/blob/main/se-3689/README.md">README.md</a>.
+  </p>
+  <table>
+    <thead><tr><th>Target</th><th>Simulates</th><th>Expected</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="blocked/">blocked/</a></td>
+        <td>Main thread pinned 90s (the AccessiBe bug)</td>
+        <td>Scan completes with timeout warnings; early cookie/storage markers still returned</td>
+      </tr>
+      <tr>
+        <td><a href="slow-healthy/">slow-healthy/</a></td>
+        <td>Heavy-but-working site (~65% CPU for 12s, iframe churn, GTM)</td>
+        <td>Zero timeout warnings; 30 links, 4 cookies, storage complete</td>
+      </tr>
+      <tr>
+        <td><a href="healthy/">healthy/</a></td>
+        <td>Plain fast site</td>
+        <td>Fast, zero warnings, 10 links, 2 cookies</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

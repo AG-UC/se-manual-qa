@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SE-3689 — blocked main thread (AccessiBe-style hang simulation)</title>
+
+  <script>
+    // Markers set BEFORE the main thread gets pinned — a correct fix must still
+    // return these in the /track response even though the page never "finishes".
+    document.cookie = "se3689_blocked_early=1; path=/; max-age=3600";
+    localStorage.setItem("se3689_blocked_storage", "set-before-pin");
+  </script>
+
+  <script>
+    // Simulates the AccessiBe accessWidget bug (EnvironmentPurifier.purifyIframeWindow
+    // recursion, SE-3689): a third-party script that pins the renderer's main thread
+    // synchronously, so no page.*/CDP call against this page can be serviced while it runs.
+    // Wall-clock based (Date.now()), not iteration-count based, so the duration is the same
+    // on any machine. Default 90s ≫ any single /track request; override with ?blockMs=7000.
+    const blockMs = Number(new URLSearchParams(location.search).get("blockMs")) || 90000;
+    const start = Date.now();
+    while (Date.now() - start < blockMs) { /* busy */ }
+  </script>
+</head>
+<body>
+  <h1>SE-3689 blocked-main-thread target</h1>
+  <p>This page pins the browser main thread (default 90s). The scanner must complete with
+     timeout warnings instead of hanging.</p>
+  <a href="?p=1">link 1 (only collectable once the thread frees up)</a>
+  <a href="?p=2">link 2</a>
+  <a href="?p=3">link 3</a>
+</body>
+</html>

@@ -31,6 +31,7 @@ links can cause the scanner to crawl outward and contaminate the signal).
 
 | Ticket | Directory | Bug class | Status |
 | --- | --- | --- | --- |
+| [SE-3689](https://usercentrics.atlassian.net/browse/SE-3689) | [`se-3689/`](./se-3689/) | `scan-tracker` `/track` hangs forever when a third-party script (AccessiBe) pins the page main thread; PR #120 adds 3–5s timeout guards. 3 sub-targets: `blocked/`, `slow-healthy/` (regression: guards must NOT fire), `healthy/` | Smoke ready — runbook in `se-3689/README.md` |
 | [SE-3091](https://usercentrics.atlassian.net/browse/SE-3091) | [`se-3091/`](./se-3091/) | `scan-adapter` cookie-purpose cache-aliasing | Smoke ready |
 | [SE-2686](https://usercentrics.atlassian.net/browse/SE-2686) / [SE-3202](https://usercentrics.atlassian.net/browse/SE-3202) | [`se-2686/`](./se-2686/) | DEA tag-delivery-method classification (GTG / SST / THIRD_PARTY) | Smoke ready — 4 sub-targets + runbook |
 | [SE-2770](https://usercentrics.atlassian.net/browse/SE-2770) | [`se-2770/`](./se-2770/) | `scan-configuration-api` + `scan-planner` `httpRequestInjections` plumbing (One CMP) | Smoke ready |

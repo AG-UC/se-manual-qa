@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SE-3689 — slow but healthy page (regression target)</title>
+
+  <!-- Real third-party tag: makes the network busy and gives the scanner a genuine
+       third-party tracker to record (same approach as the se-2256 target). -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-SE3689TEST"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag("js", new Date());
+    gtag("config", "G-SE3689TEST");
+  </script>
+
+  <script>
+    // Markers the scan MUST contain in full — any of these missing = data truncation.
+    document.cookie = "se3689_slow_c1=1; path=/; max-age=3600";
+    document.cookie = "se3689_slow_c2=2; path=/; max-age=3600";
+    document.cookie = "se3689_slow_c3=3; path=/; max-age=3600";
+    localStorage.setItem("se3689_slow_ls1", "v1");
+    localStorage.setItem("se3689_slow_ls2", "v2");
+    sessionStorage.setItem("se3689_slow_ss1", "v1");
+  </script>
+</head>
+<body>
+  <h1>SE-3689 slow-but-healthy target</h1>
+  <p>
+    This page is deliberately heavy and slow — the main thread is ~65% busy for 12 seconds
+    and iframes keep being created — but it always yields, like a complex-but-working
+    production site. The new PR #120 timeout guards must NOT fire here, and no data
+    (links, cookies, storage) may be silently dropped.
+  </p>
+
+  <nav id="links"><!-- 30 links injected below so the count is exact --></nav>
+
+  <script>
+    // Exactly 30 distinct links — the /track response's links array must contain all of them.
+    const nav = document.getElementById("links");
+    for (let i = 1; i <= 30; i++) {
+      const a = document.createElement("a");
+      a.href = "?p=" + i;
+      a.textContent = "link " + i;
+      nav.appendChild(a);
+      nav.appendChild(document.createTextNode(" "));
+    }
+  </script>
+
+  <script>
+    // Chunked CPU load: ~20ms of busy work every ~30ms for 12s. Heavy (≈65% main-thread
+    // utilisation) but ALWAYS yields, so CDP calls are serviced within tens of ms.
+    // This is the "slow/complex but not stuck" profile the team is worried about.
+    const workUntil = Date.now() + 12000;
+    (function slice() {
+      const sliceEnd = Date.now() + 20;
+      while (Date.now() < sliceEnd) { /* busy */ }
+      if (Date.now() < workUntil) setTimeout(slice, 10);
+    })();
+
+    // Iframe churn: tag managers and widgets create iframes as they boot — this is the
+    // activity pattern that fed the AccessiBe cascade. Here it is harmless but realistic.
+    let created = 0;
+    const iframeTimer = setInterval(() => {
+      const f = document.createElement("iframe");
+      f.srcdoc = "<p>frame " + created + "</p>";
+      f.style.cssText = "width:80px;height:40px";
+      document.body.appendChild(f);
+      if (++created >= 5) clearInterval(iframeTimer);
+    }, 1500);
+
+    // A late cookie, written while the page is still being scanned — must also be captured.
+    setTimeout(() => {
+      document.cookie = "se3689_slow_late=1; path=/; max-age=3600";
+    }, 4000);
+  </script>
+</body>
+</html>
