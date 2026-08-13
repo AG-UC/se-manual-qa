@@ -77,3 +77,33 @@ curl -sS -X POST http://localhost:5051/track -H "Content-Type: application/json"
 5. Known-broken real site (henryusa.com): completes with warnings instead of hanging
    (on `main` it hangs — only test this on the PR branch, and kill the request after ~60s
    if you test the baseline).
+
+## Executed results — 2026-08-13, PR `0fd9fb3` vs `main` `f363a90` (local, same machine)
+
+| Target | `main` (baseline) | PR branch | Verdict |
+| --- | --- | --- | --- |
+| `healthy/` | 3.9s, 0 warnings, 10 links, all 3 markers | 4.8s, 0 warnings, 10 links, all 3 markers | PASS — identical |
+| `slow-healthy/` | 3.7s, 0 warnings, 30 links, all 7 markers (incl. late cookie) | 4.1s, 0 warnings, 30 links, all 7 markers | PASS — identical, guards did NOT fire |
+| `blocked/` | **HUNG** — killed at 90s, 0 bytes received | **28.8s**, all 5 guard warnings, pre-pin cookie + storage returned | PASS — bug reproduced on main, fixed on PR |
+| henryusa.com | **HUNG** — killed at 120s, 0 bytes received | **25.8s**, 4 guard warnings, real partial data (35 tags, 79 resources) | PASS — same on the real customer site |
+
+Guard warnings observed on the PR branch (`blocked/`): `mouse simulation timed out after 4000ms`,
+`maxWaitTime of 10000ms exceeded before load-event (readyState: unknown)`,
+`collecting links timed out after 3000ms`,
+`collectRequests: timed out detaching CDP session after 3000ms`,
+`mergeBrowserTrackers: timed out retrieving browser storage state after 5000ms — results may be incomplete`.
+
+## After merge — dev sanity + broad check (planned)
+
+Once PR #120 is merged and the new tracker image is on dev:
+
+1. **Sanity (broken case):** scan henryusa.com on the dev environment — expect a completed,
+   non-empty result with warnings; sidecar logs no longer show 10-min
+   `System.TimeoutException … GetPageTrackerResult` storms.
+2. **Sanity (healthy case):** rescan 2–3 domains previously scanned on dev and compare
+   cookie/tracker counts — no drops.
+3. **Broad:** run a spread of regular scan targets and check results for `timed out`
+   warnings — they should appear only on genuinely stuck sites. Investigate any hit with the
+   `hang-diagnose` skill from `scan-dev-ai` (tells the known AccessiBe bug apart from a new hang).
+4. **Observability:** watch tracker logs/Datadog for the new guard warnings' rate and confirm
+   no `unhandledRejection` pod crashes.
