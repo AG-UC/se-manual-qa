@@ -109,6 +109,30 @@ Guard warnings observed on the PR branch (`blocked/`): `mouse simulation timed o
 `collectRequests: timed out detaching CDP session after 3000ms`,
 `mergeBrowserTrackers: timed out retrieving browser storage state after 5000ms — results may be incomplete`.
 
+## Executed: real-site spread — 2026-08-14, PR `0fd9fb3` (local). Overall PASS, zero false positives
+
+Guard warnings fired **only** where the AccessiBe bug actively pinned the thread.
+
+| Site | Result |
+| --- | --- |
+| bbc.com | 8.8s, 0 warnings, 186 links, 22 cookies |
+| cnn.com | 12.1s, pre-existing `waitForInactivity` only, 209 links, 32 cookies |
+| nytimes.com | 12.2s, pre-existing slow-load warning (`readyState: interactive` — probe answered), 378 links, 24 cookies |
+| spiegel.de | 5.7s, 0 warnings, 309 links |
+| bild.de | 7.0s, 0 warnings, 656 links |
+| amazon.de | 7.7s, 0 warnings, 325 links |
+| de.aliexpress.com | 7.9s, 0 warnings, 180 links |
+| booking.com | bot-challenge redirect → redirect error, no scan (pre-existing, unrelated) — excluded |
+| vaccindirekt.se | 12.1s, pre-existing `waitForInactivity` only, 21 cookies (≈ SE-3332 baseline) |
+| **www.henryusa.com** (broken) | **25.1s, 4 guard warnings, 11 cookies — completes instead of hanging** |
+| **caesarstone.co.uk** (broken) | **25.5s, 4 guard warnings, 14 cookies** |
+| **vibrantz.com** (broken + Cookiebot customer) | **26.7s, 4 guard warnings, 2 cookies — the production victim case now completes** |
+| magnetforensics.com | 14.4s, **no** guard warnings, 151 links, 37 cookies — AccessiBe episode not active this run, full data |
+| accessibe.com (widget, healthy) | 11.5s, 0 warnings, 70 links, 38 cookies |
+
+Gotcha: `www.vibrantz.com`, apex `henryusa.com`, and `www.aliexpress.com` only 301-redirect —
+the tracker treats cross-URL redirects as errors, so scan the canonical host directly.
+
 ## After merge — dev sanity + broad check (planned)
 
 Once PR #120 is merged and the new tracker image is on dev:
