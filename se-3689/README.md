@@ -133,9 +133,22 @@ Guard warnings fired **only** where the AccessiBe bug actively pinned the thread
 Gotcha: `www.vibrantz.com`, apex `henryusa.com`, and `www.aliexpress.com` only 301-redirect —
 the tracker treats cross-URL redirects as errors, so scan the canonical host directly.
 
+## Executed: post-merge re-run — 2026-08-14, merged `main` (`928e704`). Overall PASS
+
+PR #120 is merged; the full suite re-ran on merged `main` locally. Unit tests 390/391
+(the 1 failure is a pre-existing Linux-host-only stealth-UA test, unrelated). Fixtures:
+healthy 3.9s / slow-healthy 3.8s, both 0 warnings, all markers; blocked 28.5s with all
+5 guard warnings (used to hang). Real-site spread matched yesterday's PR-branch numbers —
+zero guard warnings on every healthy site (bbc 188 links, cnn 214, nytimes 383, spiegel 313,
+bild 654, amazon.de 356, de.aliexpress 120, vaccindirekt.se 21 cookies, accessibe.com 70
+links / 40 cookies); the broken sites completed in 25–27s with guard warnings + partial data
+(henryusa 14 cookies, caesarstone 13, vibrantz 2). magnetforensics.com's AccessiBe episode
+was **active** this run (3 guard warnings, 24 cookies) after being inactive yesterday —
+the guards track the actual episode, not the site. Zero false positives in both runs.
+
 ## After merge — dev sanity + broad check (planned)
 
-Once PR #120 is merged and the new tracker image is on dev:
+Once the new tracker image is on dev:
 
 1. **Sanity (broken case):** scan henryusa.com on the dev environment — expect a completed,
    non-empty result with warnings; sidecar logs no longer show 10-min
