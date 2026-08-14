@@ -146,6 +146,29 @@ links / 40 cookies); the broken sites completed in 25–27s with guard warnings 
 was **active** this run (3 guard warnings, 24 cookies) after being inactive yesterday —
 the guards track the actual episode, not the site. Zero false positives in both runs.
 
+## Executed: dev-environment check — 2026-08-14, ad-hoc `POST /Scan` on dev scan-api
+
+Single-page scans, production-like config (`initialPageLoadTimes: 2`), credentials/path as in
+`scan-e2e`. **Hang gone on dev; zero false positives on real pod hardware.**
+
+| Target | Dev result |
+| --- | --- |
+| slow-healthy fixture | Done in 10s, rc 200, all markers (11 cookies / 3 storage), 14 trackers |
+| bbc.com | Done in 30s, 40 cookies, 83 trackers |
+| vaccindirekt.se | Done in 20s, 26+9 cookies, 47 trackers |
+| blocked fixture | Scan Done in 30s (was: 10-min hang) — page `Failed`, `maxWaitTime of 10000ms exceeded: server failed to respond in time`, no data |
+| henryusa.com | identical: Done in 30s, page `Failed`, same error |
+
+**Nuance:** with `initialPageLoadTimes: 2` the tracker reloads the page; on a still-pinned
+thread the reload can't commit, and a pre-existing goto/reload-timeout throw in `track.ts`
+marks the page Failed, discarding the partial data the guards rescued (reproduced locally
+with `loadTimes: 2`). Permanently-pinned pages therefore fail fast and clearly in prod
+config; the partial-data-with-warnings outcome applies to intermittent episodes or
+`loadTimes: 1`. Possible follow-up: skip the reload after a `readyState: unknown` first pass.
+
+Still pending: Datadog watch (TimeoutException storm rate on dev traffic, `unhandledRejection`
+crashes, guard-warning rate).
+
 ## After merge — dev sanity + broad check (planned)
 
 Once the new tracker image is on dev:
